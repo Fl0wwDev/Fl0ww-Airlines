@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <title>Login | Ludiflex</title>
+</head>
+<body>
+    <nav>
+        <div class="nav__logo">Airline</div>
+    </nav>
+    <div class="login-box">
+        <div class="login-header">
+            <header>Login</header>
+        </div>
+        <form id="login-form">
+            {% csrf_token %}
+            <div class="input-box">
+                <input type="email" class="input-field" name="email" placeholder="Email" autocomplete="off" required>
+            </div>
+            <div class="input-box">
+                <input type="password" class="input-field" name="password" placeholder="Password" autocomplete="off" required>
+            </div>
+            <div class="forgot">
+                <section>
+                    <input type="checkbox" id="check" name="remember_me">
+                    <label for="check">Remember me</label>
+                </section>
+                <section>
+                    <a>Forgot password</a>
+                </section>
+            </div>
+            <div class="input-submit">
+                <button class="submit-btn" id="submit" type="submit">Sign In</button>
+            </div>
+        </form>
+        <div class="sign-up-link">
+            <p>Don't have an account? <a href="{% url 'signup' %}">Sign Up</a></p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { connect, StringCodec } from '{% static "js/nats.js" %}';
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log("Document loaded");
+
+            let nc;
+
+            try {
+                // Connexion au serveur NATS
+                nc = await connect({ servers: "ws://localhost:9222" });
+
+                console.log("Connecté au serveur NATS");
+
+                nc.closed().then(() => {
+                    console.log("Connexion au serveur NATS fermée");
+                });
+
+            } catch (err) {
+                console.error(`Erreur de connexion au serveur NATS: ${err.message}`);
+            }
+
+            document.getElementById('login-form').addEventListener('submit', async function(event) {
+                event.preventDefault();
+                const submitButton = document.getElementById('submit');
+                submitButton.disabled = true;
+    
+                const formData = new FormData(this);
+                const data = {
+                    email: formData.get('email'),
+                    password: formData.get('password')
+                };
+    
+                // Send data to NATS
+                if (nc) {
+                    const sc = StringCodec();
+                    try {
+                        const response = await nc.request("login", sc.encode(JSON.stringify(data)), { timeout: 5000 });
+                        const responseData = JSON.parse(sc.decode(response.data));
+                        if (responseData.status === 'success') {
+                            // Stocker les informations de l'utilisateur dans la session
+                            sessionStorage.setItem('user', JSON.stringify({
+                                nom: responseData.nom,
+                                prenom: responseData.prenom
+                            }));
+                            window.location.href = "{% url 'index' %}";
+                        } else {
+                            alert('Error: ' + responseData.message);
+                        }
+                    } catch (err) {
+                        console.error('Error:', err);
+                    }
+                }
+    
+                submitButton.disabled = false;
+            });
+        });
+    </script>
+</body>
+</html>

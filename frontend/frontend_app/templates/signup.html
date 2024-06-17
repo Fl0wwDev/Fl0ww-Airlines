@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <title>Sign Up | Ludiflex</title>
+</head>
+<body>
+    <nav>
+        <div class="nav__logo">Airline</div>
+    </nav>
+    <div class="login-box">
+        <form id="signup-form" method="post" action="/signup/">
+            {% csrf_token %}
+            <div class="login-header">
+                <header>Sign Up</header>
+            </div>
+            <div class="input-box">
+                <input type="text" name="nom" class="input-field" placeholder="Nom" autocomplete="off" required>
+            </div>
+            <div class="input-box">
+                <input type="text" name="prenom" class="input-field" placeholder="Prénom" autocomplete="off" required>
+            </div>
+            <div class="input-box">
+                <input type="email" name="email" class="input-field" placeholder="Email" autocomplete="off" required>
+            </div>
+            <div class="input-box">
+                <input type="password" name="mot_de_passe" class="input-field" placeholder="Password" autocomplete="off" required>
+            </div>
+            <div class="input-box">
+                <input type="password" name="confirm_password" class="input-field" placeholder="Confirm Password" autocomplete="off" required>
+            </div>
+            <div class="input-box">
+                <input type="text" name="telephone" class="input-field" placeholder="Telephone" autocomplete="off" required>
+            </div>
+            <div class="input-box">
+                <input type="text" name="adresse" class="input-field" placeholder="Adresse" autocomplete="off" required>
+            </div>
+            <div class="input-box">
+                <select name="pays" class="input-field" required>
+                    <option value="">Sélectionnez un pays</option>
+                </select>
+            </div>
+            <div class="input-box">
+                <select name="ville" class="input-field" required>
+                    <option value="">Sélectionnez une ville</option>
+                </select>
+            </div>
+            <div class="input-box">
+                <input type="text" name="code_postal" class="input-field" placeholder="Code Postale" autocomplete="off" required>
+            </div>
+            <div class="input-box">
+                <input type="date" name="date_naissance" class="input-field" placeholder="Date de naissance" autocomplete="off" required>
+            </div>
+            <div class="input-submit">
+                <button type="submit" class="submit-btn" id="submit">Sign Up</button>
+            </div>
+            <div class="sign-up-link">
+                <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+            </div>
+        </form>
+    </div>
+
+    <script type="module">
+        import { connect, StringCodec } from '{% static "js/nats.js" %}';
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log("Document loaded");
+
+            let nc;
+
+            try {
+                // Connexion au serveur NATS
+                nc = await connect({ servers: "ws://localhost:9222" });
+
+                console.log("Connecté au serveur NATS");
+
+                nc.closed().then(() => {
+                    console.log("Connexion au serveur NATS fermée");
+                });
+
+            } catch (err) {
+                console.error(`Erreur de connexion au serveur NATS: ${err.message}`);
+            }
+
+            // Charger les pays depuis un fichier JSON
+            fetch('{% static "data/countries.json" %}')
+                .then(response => response.json())
+                .then(data => {
+                    const countrySelect = document.querySelector('select[name="pays"]');
+                    data.forEach(country => {
+                        const option = document.createElement('option');
+                        option.value = country.code;
+                        option.textContent = country.name;
+                        countrySelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error loading countries:', error));
+    
+            document.querySelector('select[name="pays"]').addEventListener('change', function() {
+                const selectedCountryCode = this.value;
+                const citySelect = document.querySelector('select[name="ville"]');
+                citySelect.innerHTML = '<option value="">Sélectionnez une ville</option>';
+    
+                if (selectedCountryCode) {
+                    fetch(`http://api.geonames.org/searchJSON?country=${selectedCountryCode}&featureClass=P&maxRows=1000&username=fl0ww`)
+                        .then(response => response.json())
+                        .then(data => {
+                            data.geonames.sort((a, b) => a.name.localeCompare(b.name));
+                            data.geonames.forEach(city => {
+                                const option = document.createElement('option');
+                                option.value = city.name;
+                                option.textContent = city.name;
+                                citySelect.appendChild(option);
+                            });
+                        })
+                        .catch(error => console.error('Error loading cities:', error));
+                }
+            });
+
+            document.getElementById('signup-form').addEventListener('submit', async function(event) {
+                event.preventDefault();
+                const submitButton = document.getElementById('submit');
+                submitButton.disabled = true;
+    
+                const formData = new FormData(this);
+                const data = {
+                    nom: formData.get('nom'),
+                    prenom: formData.get('prenom'),
+                    email: formData.get('email'),
+                    mot_de_passe: formData.get('mot_de_passe'),
+                    telephone: formData.get('telephone'),
+                    adresse: formData.get('adresse'),
+                    ville: formData.get('ville'),
+                    code_postal: formData.get('code_postal'),
+                    pays: formData.get('pays'),
+                    date_naissance: formData.get('date_naissance'),
+                };
+    
+                // Send data to NATS
+                if (nc) {
+                    const sc = StringCodec();
+                    nc.publish('signup', sc.encode(JSON.stringify(data)));
+                    console.log(`Data sent to NATS: ${JSON.stringify(data)}`);
+                }
+    
+                fetch('/signup/', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    submitButton.disabled = false;
+                    if (response.ok) {
+                        window.location.href = "{% url 'signup_success' %}";
+                    } else {
+                        response.json().then(data => {
+                            alert('Error: ' + data.message);
+                        });
+                    }
+                })
+                .catch(error => {
+                    submitButton.disabled = false;
+                    console.error('Error:', error);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
