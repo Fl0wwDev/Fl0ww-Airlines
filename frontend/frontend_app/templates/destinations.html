@@ -17,7 +17,6 @@
             <li class="link"><a href="{% url 'offers' %}">Offers</a></li>
             <li class="link"><a href="{% url 'seats' %}">Seats</a></li>
             <li class="link"><a href="{% url 'destinations' %}">Destinations</a></li>
-            <!-- Remplacer par un lien statique si la vue n'existe pas -->
         </ul>
         {% if request.session.user %}
             <span>Welcome, {{ request.session.user.prenom }} {{ request.session.user.nom }}</span>
@@ -82,61 +81,67 @@
     </footer>
 
     <script type="module">
-        import { connect, StringCodec } from '{% static "js/nats.js" %}';
+    import { connect, StringCodec } from '{% static "js/nats.js" %}';
 
-        document.addEventListener('DOMContentLoaded', async function() {
-            console.log("Document loaded");
+  document.addEventListener('DOMContentLoaded', async function() {
+      console.log("Document loaded");
 
-            let nc;
+      let nc;
 
-            try {
-                // Connexion au serveur NATS
-                nc = await connect({ servers: "ws://localhost:9222" });
+      try {
+          // Connexion au serveur NATS
+          nc = await connect({ servers: "ws://localhost:9222" });
 
-                console.log("Connecté au serveur NATS");
+          console.log("Connecté au serveur NATS");
 
-                nc.closed().then(() => {
-                    console.log("Connexion au serveur NATS fermée");
-                });
+          nc.closed().then(() => {
+              console.log("Connexion au serveur NATS fermée");
+          });
 
-                const sc = StringCodec();
+          const sc = StringCodec();
 
-                // Récupérer les départs
-                const departuresResponse = await nc.request("get_departures", sc.encode(""), { timeout: 5000 });
-                const departuresData = JSON.parse(sc.decode(departuresResponse.data));
-                const departuresContainer = document.getElementById('departures');
-                departuresData.data.forEach(flight => {
-                    const flightCard = document.createElement('div');
-                    flightCard.className = 'flights__card';
-                    flightCard.innerHTML = `
-                        <h3>${flight.flight_number}</h3>
-                        <p>Departure Time: ${flight.departure_time}</p>
-                        <p>Destination: ${flight.destination}</p>
-                        <p>Price: ${flight.prix}</p>
-                        <p>Seats Available: ${flight.sieges_disponible}</p>
-                    `;
-                    departuresContainer.appendChild(flightCard);
-                });
+          // Récupérer les départs
+          const departuresResponse = await nc.request("get_departures", sc.encode(""), { timeout: 5000 });
+          const departuresData = JSON.parse(sc.decode(departuresResponse.data));
 
-                // Récupérer les arrivées
-                const arrivalsResponse = await nc.request("get_arrivals", sc.encode(""), { timeout: 5000 });
-                const arrivalsData = JSON.parse(sc.decode(arrivalsResponse.data));
-                const arrivalsContainer = document.getElementById('arrivals');
-                arrivalsData.data.forEach(flight => {
-                    const flightCard = document.createElement('div');
-                    flightCard.className = 'flights__card';
-                    flightCard.innerHTML = `
-                        <h3>${flight.flight_number}</h3>
-                        <p>Arrival Time: ${flight.arrival_time}</p>
-                        <p>Origin: ${flight.origin}</p>
-                    `;
-                    arrivalsContainer.appendChild(flightCard);
-                });
+          if (departuresData.status === 'success') {
+              const departuresContainer = document.getElementById('departures');
+              departuresData.data.forEach(departure => {
+                  const flightDiv = document.createElement('div');
+                  flightDiv.classList.add('flight');
+                  flightDiv.innerHTML = `
+                      <h3>${departure.flight_number}</h3>
+                      <p>Departure Time: ${departure.departure_time}</p>
+                      <p>Destination: ${departure.destination}</p>
+                      <p>Prix: ${departure.prix}</p>
+                      <p>Sieges Disponible: ${departure.sieges_disponible}</p>
+                  `;
+                  departuresContainer.appendChild(flightDiv);
+              });
+          }
 
-            } catch (err) {
-                console.error(`Erreur de connexion au serveur NATS: ${err.message}`);
-            }
-        });
+          // Récupérer les arrivées
+          const arrivalsResponse = await nc.request("get_arrivals", sc.encode(""), { timeout: 5000 });
+          const arrivalsData = JSON.parse(sc.decode(arrivalsResponse.data));
+
+          if (arrivalsData.status === 'success') {
+              const arrivalsContainer = document.getElementById('arrivals');
+              arrivalsData.data.forEach(arrival => {
+                  const flightDiv = document.createElement('div');
+                  flightDiv.classList.add('flight');
+                  flightDiv.innerHTML = `
+                      <h3>${arrival.flight_number}</h3>
+                      <p>Arrival Time: ${arrival.arrival_time}</p>
+                      <p>Origin: ${arrival.origin}</p>
+                  `;
+                  arrivalsContainer.appendChild(flightDiv);
+              });
+          }
+
+      } catch (err) {
+          console.error(`Erreur de connexion au serveur NATS: ${err.message}`);
+      }
+  });
     </script>
 </body>
 </html>

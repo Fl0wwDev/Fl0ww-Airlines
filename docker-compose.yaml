@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  nats:
+    build: .
+    ports:
+      - "4222:4222"
+      - "9222:9222"
+    volumes:
+      - ./nats-server.conf:/nats-server.conf

@@ -40,11 +40,18 @@ def get_client_by_email(email):
 
 @sync_to_async
 def get_all_departures():
-    return list(FlightDeparture.objects.all().values())
+    departures = list(FlightDeparture.objects.all().values())
+    for departure in departures:
+        departure['departure_time'] = departure['departure_time'].isoformat()
+        departure['prix'] = str(departure['prix'])
+    return departures
 
 @sync_to_async
 def get_all_arrivals():
-    return list(FlightArrival.objects.all().values())
+    arrivals = list(FlightArrival.objects.all().values())
+    for arrival in arrivals:
+        arrival['arrival_time'] = arrival['arrival_time'].isoformat()
+    return arrivals
 
 async def async_authenticate(email, password):
     print(f"Authenticating user with email: {email}")
@@ -96,13 +103,8 @@ async def run():
         data = msg.data.decode()
         print(f"Received a message on '{subject}': {data}")
 
-        if data:
-            try:
-                data = json.loads(data)
-            except json.JSONDecodeError as e:
-                print(f"Error decoding JSON: {e}")
-                return
-
+        # Process the data based on subject
+        data = json.loads(data) if data else {}
         if subject == "signup":
             response = await save_client_data(data)
         elif subject == "login":
