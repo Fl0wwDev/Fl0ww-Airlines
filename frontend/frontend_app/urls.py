@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import index, about, offers, seats, destinations, signup_view, signup_success, login_view, login_success, profile_view, logout_view
+from .views import index, about, offers, seats, destinations, signup_view, signup_success, login_view, login_success, profile_view, logout_view, flight_detail
 
 urlpatterns = [
     path('', index, name='index'),
@@ -13,4 +13,6 @@ urlpatterns = [
     path('login/success/', login_success, name='login_success'),
     path('profile/', profile_view, name='profile'),
     path('logout/', logout_view, name='logout'),
+    path('flights/<str:flight_type>/<int:flight_id>/', flight_detail, name='flight_detail'),
 ]
+

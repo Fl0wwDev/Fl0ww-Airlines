@@ -23,7 +23,7 @@ Assurez-vous d'avoir les éléments suivants installés sur votre système :
 
 ## Exécution du Projet
 
-### Démarrer le Serveur Backend
+### Démarrer le projet Backend
 
 Ouvrez un terminal, naviguez jusqu'au répertoire du projet, puis exécutez :
 
@@ -32,13 +32,13 @@ cd Aeroport_project
 python manage.py runserver 8002
 ```
 
-Démarrer le Serveur Frontend
+### Démarrer le projet Frontend
 Ouvrez un autre terminal, naviguez jusqu'au répertoire du projet, puis exécutez :
 
 ```bash
-python manage.py runserver
+python manage.py runserver 8001
 ```
-Exécuter NATS
+### Exécuter le listener NATS
 Ouvrez un troisième terminal, naviguez jusqu'au répertoire du projet, puis exécutez :
 
 ```bash
@@ -46,7 +46,7 @@ cd Aeroport_project
 py manage.py run_nats
 ```
 
-Démarrer le Serveur NATS
+### Démarrer le Serveur NATS
 Pour démarrer le serveur NATS, utilisez Docker. Ouvrez un quatrième terminal et exécutez :
 
 ```bash
@@ -54,7 +54,7 @@ docker build -t nats-server .
 docker run -d --name nats -p 4222:4222 nats-server
 ```
 
-Si la configuration Docker ne fonctionne pas, consultez le fichier CMD-POUR-LANCER-SERVEUR pour des commandes alternatives.
+Si la configuration Docker ne fonctionne **pas**, consultez le fichier *CMD-POUR-LANCER-SERVEUR* pour des commandes alternatives.
 
 ## Fonctionnalités
 ### Ce Qui Fonctionne

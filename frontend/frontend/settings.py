@@ -71,7 +71,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'frontend.wsgi.application'
 
-
+FLIGHT_API_URL = 'http://127.0.0.1:8002'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
