@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
-    <title>Login | Ludiflex</title>
+    <title>Connexion</title>
 </head>
 <body>
     <nav>
@@ -19,10 +19,10 @@
         <form id="login-form">
             {% csrf_token %}
             <div class="input-box">
-                <input type="email" class="input-field" name="email" placeholder="Email" autocomplete="off" required>
+                <input type="email" class="input-field" name="email" placeholder="Email" autocomplete="email" required>
             </div>
             <div class="input-box">
-                <input type="password" class="input-field" name="password" placeholder="Password" autocomplete="off" required>
+                <input type="password" class="input-field" name="password" placeholder="Password" autocomplete="current-password" required>
             </div>
             <div class="forgot">
                 <section>
@@ -84,6 +84,7 @@
                         if (responseData.status === 'success') {
                             // Stocker les informations de l'utilisateur dans la session
                             sessionStorage.setItem('user', JSON.stringify({
+                                id: responseData.id,
                                 nom: responseData.nom,
                                 prenom: responseData.prenom
                             }));

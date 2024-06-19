@@ -14,7 +14,7 @@ class Clients(models.Model):
     ville = models.CharField(max_length=255)
     code_postal = models.CharField(max_length=10)
     pays = models.CharField(max_length=255)
-    date_inscription = models.DateTimeField(default=timezone.now)  # Ajouté avec une valeur par défaut
+    date_inscription = models.DateTimeField(default=timezone.now)  
 
     def __str__(self):
         return self.nom
