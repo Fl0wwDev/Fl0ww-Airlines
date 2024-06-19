@@ -7,6 +7,13 @@ from rest_framework import status
 from .models import Reservation
 from .serializers import ReservationSerializer
 from vols_depart_app.models import FlightDeparture
+from django.shortcuts import render
+from django.shortcuts import get_object_or_404, redirect
+from django.views.decorators.http import require_POST
+from django.urls import reverse
+from django.contrib.admin.views.decorators import staff_member_required
+
+
 
 class ReservationListAPIView(APIView):
     def get(self, request):
@@ -58,3 +65,19 @@ class ReservationDetailAPIView(APIView):
         reservation = self.get_object(pk)
         reservation.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    
+
+@staff_member_required
+def admin_reservations(request):
+    reservations = Reservation.objects.all()
+    return render(request, 'admin_reservations.html', {'reservations': reservations})
+
+@staff_member_required
+@require_POST
+def validate_reservation(request, reservation_id):
+    reservation = get_object_or_404(Reservation, id=reservation_id)
+    reservation.is_validated = True
+    reservation.save()
+    return redirect(reverse('admin_reservations'))
+

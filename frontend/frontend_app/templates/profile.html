@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.4.0/fonts/remixicon.css" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <title>Profile</title>
+    <style>
+        .reservations {
+            margin-top: 20px;
+        }
+        .reservation {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .validated {
+            color: green;
+        }
+        .pending {
+            color: orange;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav__logo">Airline</div>
+        <ul class="nav__links">
+            <li class="link"><a href="{% url 'index' %}">Home</a></li>
+            <li class="link"><a href="{% url 'about' %}">About</a></li>
+            <li class="link"><a href="{% url 'offers' %}">Offers</a></li>
+            <li class="link"><a href="{% url 'seats' %}">Seats</a></li>
+            <li class="link"><a href="{% url 'destinations' %}">Destinations</a></li>
+            <li class="link"><a href="{% url 'profile' %}">Profile</a></li>
+        </ul>
+        <div id="user-info"></div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const user = JSON.parse(sessionStorage.getItem('user'));
+                const userInfoDiv = document.getElementById('user-info');
+                
+                if (user) {
+                    userInfoDiv.innerHTML = `<span>Welcome, ${user.prenom} ${user.nom}</span>
+                                              <a href="{% url 'profile' %}">Profile</a>
+                                              <button id="logout-btn" class="btn">Logout</button>`;
+                } else {
+                    userInfoDiv.innerHTML = `<button class="btn" onclick="window.location.href='{% url 'login' %}'">Login</button>`;
+                }
+            });
+        </script>
+    </nav>
+    <header class="section__container header__container">
+        <h1 class="section__header">Profile</h1>
+    </header>
+
+    <section class="section__container reservations__container">
+        <h2>Your Reservations</h2>
+        <div id="reservations" class="reservations"></div>
+    </section>
+
+    <footer class="footer">
+        <div class="section__container footer__container">
+            <div class="footer__col">
+                <h3>Flivan</h3>
+                <p>
+                    Where Excellence Takes Flight. With a strong commitment to customer
+                    satisfaction and a passion for air travel, Flivan Airlines offers
+                    exceptional service and seamless journeys.
+                </p>
+                <p>
+                    From friendly smiles to state-of-the-art aircraft, we connect the
+                    world, ensuring safe, comfortable, and unforgettable experiences.
+                </p>
+            </div>
+            <div class="footer__col">
+                <h4>INFORMATION</h4>
+                <p>Home</p>
+                <p>About</p>
+                <p>Offers</p>
+                <p>Seats</p>
+                <p>Destinations</p>
+            </div>
+            <div class="footer__col">
+                <h4>CONTACT</h4>
+                <p>Support</p>
+                <p>Media</p>
+                <p>Socials</p>
+            </div>
+        </div>
+        <div class="section__container footer__bar">
+            <p>Copyright © 4 Web Design Mastery. All rights reserved.</p>
+            <div class="socials">
+                <span><i class="ri-facebook-fill"></i></span>
+                <span><i class="ri-twitter-fill"></i></span>
+                <span><i class="ri-instagram-line"></i></span>
+                <span><i class="ri-youtube-fill"></i></span>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module">
+        import { connect, StringCodec } from '{% static "js/nats.js" %}';
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log("Document loaded");
+
+            let nc;
+
+            try {
+                // Connexion au serveur NATS
+                nc = await connect({ servers: "ws://localhost:9222" });
+
+                console.log("Connecté au serveur NATS");
+
+                nc.closed().then(() => {
+                    console.log("Connexion au serveur NATS fermée");
+                });
+
+                const user = JSON.parse(sessionStorage.getItem('user'));
+                const reservationsContainer = document.getElementById('reservations');
+
+                if (user) {
+                    const sc = StringCodec();
+                    const requestData = { user_email: user.email };
+
+                    // Envoyer la demande de récupération des réservations via NATS
+                    const response = await nc.request("get_reservations", sc.encode(JSON.stringify(requestData)), { timeout: 5000 });
+                    const responseData = JSON.parse(sc.decode(response.data));
+
+                    if (responseData.status === 'success') {
+                        responseData.data.forEach(reservation => {
+                            const reservationDiv = document.createElement('div');
+                            reservationDiv.classList.add('reservation');
+                            reservationDiv.innerHTML = `
+                                <p>Reservation ID: ${reservation.id}</p>
+                                <p>Flight: ${reservation.flight__flight_number}</p>
+                                <p>Prix Ticket: ${reservation.prix_ticket}</p>
+                                <p>Status: <span class="${reservation.is_validated ? 'validated' : 'pending'}">
+                                    ${reservation.is_validated ? 'Validée' : 'En attente'}
+                                </span></p>
+                            `;
+                            reservationsContainer.appendChild(reservationDiv);
+                        });
+                    } else {
+                        console.error('Failed to fetch reservations');
+                    }
+                }
+
+                // Gestion du bouton logout
+                const logoutBtn = document.getElementById('logout-btn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', function() {
+                        sessionStorage.removeItem('user');
+                        location.reload();  // Reload the page to update the UI
+                    });
+                }
+            } catch (err) {
+                console.error(`Erreur de connexion au serveur NATS: ${err.message}`);
+            }
+        });
+    </script>
+</body>
+</html>

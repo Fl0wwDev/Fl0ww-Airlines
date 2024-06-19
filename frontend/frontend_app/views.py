@@ -74,3 +74,7 @@ def flight_detail(request, flight_id, flight_type):
         return render(request, 'flight_detail.html', {'flight': flight, 'flight_type': flight_type})
     else:
         raise Http404("Flight does not exist")
+    
+@login_required
+def profile(request):
+    return render(request, 'profile.html')

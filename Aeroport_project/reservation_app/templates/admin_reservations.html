@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Reservations</title>
+</head>
+<body>
+    <h1>Admin - Reservations</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Reservation Date</th>
+                <th>Client</th>
+                <th>Flight</th>
+                <th>Prix Ticket</th>
+                <th>Validated</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reservation in reservations %}
+                <tr>
+                    <td>{{ reservation.id }}</td>
+                    <td>{{ reservation.reservation_date }}</td>
+                    <td>{{ reservation.client.email }}</td>
+                    <td>{{ reservation.flight.flight_number }}</td>
+                    <td>{{ reservation.prix_ticket }}</td>
+                    <td>{{ reservation.is_validated }}</td>
+                    <td>
+                        {% if not reservation.is_validated %}
+                            <form method="post" action="{% url 'validate_reservation' reservation.id %}">
+                                {% csrf_token %}
+                                <button type="submit">Validate</button>
+                            </form>
+                        {% else %}
+                            <span>Validated</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
