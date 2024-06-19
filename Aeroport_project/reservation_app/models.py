@@ -9,5 +9,8 @@ class Reservation(models.Model):
     client = models.ForeignKey(Clients, on_delete=models.CASCADE)
     flight = models.ForeignKey(FlightDeparture, on_delete=models.CASCADE)
 
+    class Meta:
+        unique_together = ('client', 'flight')
+
     def __str__(self):
         return f"Reservation {self.id}"

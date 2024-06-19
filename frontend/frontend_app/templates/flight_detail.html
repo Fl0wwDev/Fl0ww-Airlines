@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {% load static %}
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.4.0/fonts/remixicon.css" rel="stylesheet">
+    {% load static %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <title>Flight Detail</title>
     <style>
@@ -109,11 +109,12 @@
                 reserveBtn.id = 'reserve-btn';
                 reserveBtn.textContent = 'Reserve';
                 reservationSection.appendChild(reserveBtn);
-
+                console.log(user.email);
                 reserveBtn.addEventListener('click', async function() {
                     const flightId = "{{ flight.id }}";
-                    const userId = user.id;
-                    const flightType = "departure";
+                    const userEmail = user.email;  // Utiliser l'email de l'utilisateur
+                    
+                    console.log(`Reserving flight with id ${flightId} for user with email ${userEmail}`);
 
                     let nc;
                     try {
@@ -123,7 +124,7 @@
                         console.log("Connecté au serveur NATS");
 
                         const sc = StringCodec();
-                        const reservationData = { flight_id: flightId, user_id: userId, flight_type: flightType };
+                        const reservationData = { flight_id: flightId, user_email: userEmail };
 
                         // Envoyer la réservation via NATS
                         const response = await nc.request("reserve_flight", sc.encode(JSON.stringify(reservationData)), { timeout: 5000 });
