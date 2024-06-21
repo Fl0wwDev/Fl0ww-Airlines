@@ -1,9 +1,7 @@
-import asyncio
 import json
 import aiohttp
 import logging
 from nats.aio.client import Client as NATS
-from django.core.management.base import BaseCommand
 
 # Configuration des logs
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -42,12 +40,3 @@ async def run_departures():
 
     await nc.subscribe("get_departures", cb=message_handler)
     logging.debug("Subscribed to 'get_departures'")
-
-class Command(BaseCommand):
-    help = 'Run NATS subscriber for departures'
-
-    def handle(self, *args, **options):
-        loop = asyncio.get_event_loop()
-        logging.debug("Starting event loop for NATS subscriber...")
-        loop.run_until_complete(run_departures())
-        loop.run_forever()

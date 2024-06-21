@@ -1,9 +1,7 @@
-import asyncio
 import json
 import aiohttp
 import logging
 from nats.aio.client import Client as NATS
-from django.core.management.base import BaseCommand
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -106,14 +104,3 @@ async def run_reservations():
 
     await nc.subscribe("reserve_flight", cb=message_handler)
     await nc.subscribe("get_reservations", cb=message_handler)
-
-class Command(BaseCommand):
-    help = 'Run NATS subscriber for reservations'
-
-    def handle(self, *args, **options):
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(run_reservations())
-        loop.run_forever()
-
-if __name__ == "__main__":
-    Command().handle()

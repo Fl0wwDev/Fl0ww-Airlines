@@ -1,9 +1,8 @@
-import asyncio
 import json
 import aiohttp
 import logging
 from nats.aio.client import Client as NATS
-from django.core.management.base import BaseCommand
+
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -94,13 +93,3 @@ async def run_login_signup():
     await nc.subscribe("login", cb=message_handler)
     logging.debug("Subscribed to signup and login subjects")
 
-class Command(BaseCommand):
-    help = 'Run NATS subscriber for login and signup'
-
-    def handle(self, *args, **options):
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(run_login_signup())
-        loop.run_forever()
-
-if __name__ == "__main__":
-    Command().handle()

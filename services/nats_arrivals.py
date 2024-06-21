@@ -1,4 +1,3 @@
-import asyncio
 import json
 import aiohttp
 import logging
@@ -39,9 +38,3 @@ async def run_arrivals():
 
     await nc.subscribe("get_arrivals", cb=message_handler)
     logging.debug("Subscribed to 'get_arrivals'")
-
-if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    logging.debug("Starting event loop for NATS subscriber...")
-    loop.run_until_complete(run_arrivals())
-    loop.run_forever()

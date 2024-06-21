@@ -31,12 +31,7 @@
                 const user = JSON.parse(sessionStorage.getItem('user'));
                 const userInfoDiv = document.getElementById('user-info');
                 
-                if (user) {
-                    userInfoDiv.innerHTML = `<span>Welcome, ${user.prenom} ${user.nom}</span>
-                                              <button id="logout-btn" class="btn">Logout</button>`;
-                } else {
-                    userInfoDiv.innerHTML = `<button class="btn" onclick="window.location.href='{% url 'login' %}'">Login</button>`;
-                }
+
             });
         </script>
     </nav>
@@ -116,9 +111,7 @@
                     });
                 })
                 .catch(error => console.error('Error:', error));
-            } else {
-                window.location.href = '/login/';
-            }
+            } 
         });
 
         function validateReservation(reservationId) {
