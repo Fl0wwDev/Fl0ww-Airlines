@@ -112,7 +112,7 @@
                 console.log(user.email);
                 reserveBtn.addEventListener('click', async function() {
                     const flightId = "{{ flight.id }}";
-                    const userEmail = user.email;  // Utiliser l'email de l'utilisateur
+                    const userEmail = user.email; 
                     
                     console.log(`Reserving flight with id ${flightId} for user with email ${userEmail}`);
 
@@ -148,7 +148,7 @@
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', function() {
                     sessionStorage.removeItem('user');
-                    location.reload();  // Reload the page to update the UI
+                    location.reload();
                 });
             }
         });

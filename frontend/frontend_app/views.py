@@ -7,6 +7,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.conf import settings
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 def index(request):
     return render(request, 'index.html')
@@ -62,9 +63,9 @@ def logout_view(request):
 
 def flight_detail(request, flight_id, flight_type):
     if flight_type == 'departure':
-        url = f'http://127.0.0.1:8002/API-flight-departures/flight-departures/{flight_id}/'
+        url = f'http://127.0.0.1:8002/API-depart/vol-depart/{flight_id}/'
     elif flight_type == 'arrival':
-        url = f'http://127.0.0.1:8002/API-flight-arrivals/flight-arrivals/{flight_id}/'
+        url = f'http://127.0.0.1:8002/API-arriver/vol-arriver/{flight_id}/'
     else:
         raise Http404("Flight type is not valid")
 
@@ -78,3 +79,5 @@ def flight_detail(request, flight_id, flight_type):
 @login_required
 def profile(request):
     return render(request, 'profile.html')
+
+

@@ -1,3 +1,5 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
 
-# Register your models here.
+# Vous pouvez ajouter ici d'autres modèles spécifiques à votre application staff_app si nécessaire

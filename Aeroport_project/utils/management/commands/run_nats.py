@@ -1,4 +1,3 @@
-# Aeroport_project/management/commands/run_all_nats.py
 
 import asyncio
 from django.core.management.base import BaseCommand

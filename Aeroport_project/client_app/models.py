@@ -14,7 +14,9 @@ class Clients(models.Model):
     ville = models.CharField(max_length=255)
     code_postal = models.CharField(max_length=10)
     pays = models.CharField(max_length=255)
-    date_inscription = models.DateTimeField(default=timezone.now)  
+    date_inscription = models.DateTimeField(default=timezone.now)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
 
     def __str__(self):
         return self.nom

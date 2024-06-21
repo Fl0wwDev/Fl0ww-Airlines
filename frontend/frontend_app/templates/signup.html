@@ -154,7 +154,7 @@
                 .then(response => {
                     submitButton.disabled = false;
                     if (response.ok) {
-                        window.location.href = "{% url 'signup_success' %}";
+                        alert('Vous êtes inscrit');
                     } else {
                         response.json().then(data => {
                             alert('Error: ' + data.message);

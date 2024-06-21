@@ -1,19 +1,14 @@
-# reservation_app/views.py
-
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Reservation
 from .serializers import ReservationSerializer
-from vols_depart_app.models import FlightDeparture
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from django.urls import reverse
 from django.contrib.admin.views.decorators import staff_member_required
-
-
 
 class ReservationListAPIView(APIView):
     def get(self, request):
@@ -24,18 +19,22 @@ class ReservationListAPIView(APIView):
     def post(self, request):
         serializer = ReservationSerializer(data=request.data)
         if serializer.is_valid():
-            flight_id = serializer.validated_data['flight_id'].id
-            flight = FlightDeparture.objects.get(id=flight_id)
+            client = serializer.validated_data['client']
+            flight = serializer.validated_data['flight']
             
             # Vérifier s'il y a des sièges disponibles
             if flight.sieges_disponible > 0:
+                # Vérifier si la réservation existe déjà
+                if Reservation.objects.filter(client=client, flight=flight).exists():
+                    return Response({"error": "You have already reserved this flight."}, status=status.HTTP_400_BAD_REQUEST)
+
                 # Créer une nouvelle réservation
                 serializer.save()
-                
+
                 # Mettre à jour le nombre de sièges disponibles
                 flight.sieges_disponible -= 1
                 flight.save()
-                
+
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             else:
                 return Response({"error": "No seats available"}, status=status.HTTP_400_BAD_REQUEST)
@@ -65,8 +64,6 @@ class ReservationDetailAPIView(APIView):
         reservation = self.get_object(pk)
         reservation.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
-    
 
 @staff_member_required
 def admin_reservations(request):
@@ -80,4 +77,3 @@ def validate_reservation(request, reservation_id):
     reservation.is_validated = True
     reservation.save()
     return redirect(reverse('admin_reservations'))
-

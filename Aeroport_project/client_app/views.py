@@ -1,27 +1,25 @@
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework import status
-from .models import *
-from .serializers import *
-from django.shortcuts import render
-from rest_framework.response import Response
-from rest_framework import status
-from .models import *
-from .serializers import *
+from .models import Clients
+from .serializers import ClientSerializer
 from rest_framework.views import APIView
 from rest_framework import permissions
 from django.contrib.auth.hashers import check_password
 
-
 class ClientApiView(APIView):
     
     def get(self, request, *args, **kwargs):
-        clients = Clients.objects.all()
+        email = request.query_params.get('email', None)
+        if email:
+            clients = Clients.objects.filter(email=email)
+        else:
+            clients = Clients.objects.all()
         serializer = ClientSerializer(clients, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
-        data ={
+        data = {
             'nom': request.data.get('nom'),
             'prenom': request.data.get('prenom'),
             'email': request.data.get('email'),
@@ -39,7 +37,6 @@ class ClientApiView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 class ClientDetailApiView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -50,14 +47,12 @@ class ClientDetailApiView(APIView):
         serializer = ClientSerializer(client, many=False)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-        
     def delete(self, request, pk, *args, **kwargs):
         client = Clients.objects.get(pk=pk)
         if not client:
             return Response({'error': 'Client not found'}, status=status.HTTP_404_NOT_FOUND)
         client.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
 
     def put(self, request, pk, *args, **kwargs):
         client = Clients.objects.get(pk=pk)
@@ -80,8 +75,7 @@ class ClientDetailApiView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-                
-    
+
 class AuthenticateApiView(APIView):
 
     def post(self, request, *args, **kwargs):

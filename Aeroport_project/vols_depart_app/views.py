@@ -2,15 +2,14 @@ from rest_framework import generics
 from .models import FlightDeparture
 from .serializers import FlightDepartureSerializer
 
-class FlightDepartureListCreateView(generics.ListCreateAPIView):
+class VolDepartListCreateView(generics.ListCreateAPIView): 
     queryset = FlightDeparture.objects.all()
     serializer_class = FlightDepartureSerializer
 
-class FlightDepartureDetailView(generics.RetrieveUpdateDestroyAPIView):
+class VolDepartDetailView(generics.RetrieveUpdateDestroyAPIView): 
     queryset = FlightDeparture.objects.all()
     serializer_class = FlightDepartureSerializer
 
-
-class FlightDepartureCreateView(generics.CreateAPIView):
+class VolDepartCreateView(generics.CreateAPIView): 
     queryset = FlightDeparture.objects.all()
     serializer_class = FlightDepartureSerializer
